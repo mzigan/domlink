@@ -2,9 +2,6 @@ use std::fmt;
 
 use crate::{Tags, escape::{escape_into_string, write_escaped}};
 
-//----------------------------------------------------------------------------------------
-// Dom
-//----------------------------------------------------------------------------------------
 #[derive(Debug, Default)]
 pub struct Dom {
     pub(super) vec: Vec<Element>,
@@ -30,9 +27,6 @@ impl Dom {
     }
 }
 
-//----------------------------------------------------------------------------------------
-// Element
-//----------------------------------------------------------------------------------------
 #[derive(Debug, Default)]
 #[allow(dead_code)]
 pub struct Element {
@@ -97,7 +91,6 @@ impl Element {
         self.attr(&format!("data-{}", key), value)
     }
 
-    // Классы склеиваются, если вызвать метод несколько раз
     pub fn class(&mut self, value: &str) -> &mut Self {
         if let Some(existing) = self.attrs.iter_mut().find(|(k, _)| k == "class") {
             existing.1.push(' ');
@@ -116,8 +109,6 @@ impl Element {
     pub fn tpl(&mut self) -> &mut Self {
         self.text("{}")
     }
-
-    // --- Опасные BUILDER'ы ---
 
     /// Adds a raw, unescaped attribute string to the element.
     ///

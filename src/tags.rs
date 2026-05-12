@@ -34,7 +34,7 @@ pub enum Tags {
     Input,
     Textarea,
     Select,
-    Opt, // Переименован из Option
+    Opt,
     Meta,
     Label,
     Title,
@@ -93,10 +93,8 @@ impl Tags {
 
     pub(super) fn closing_tag(&self) -> Option<&'static str> {
         match self {
-            // Void-элементы и фрагменты не имеют закрывающего тега
             Tags::Meta | Tags::Link | Tags::Img | Tags::Br | Tags::Input | Tags::Any => None,
 
-            // Остальные теги явно перечислены
             Tags::Html => Some("</html>"),
             Tags::Head => Some("</head>"),
             Tags::Body => Some("</body>"),

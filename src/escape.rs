@@ -29,8 +29,8 @@ pub(super) fn write_escaped<W: fmt::Write>(out: &mut W, s: &str) -> fmt::Result 
     Ok(())
 }
 
-// для String write_str никогда не возвращает Err, это гарантировано стандартной библиотекой
-// поэтому здесь используем unwrap
+// for String, write_str never returns Err, this is guaranteed by the standard library
+// so we use unwrap here
 pub(super) fn escape_into_string(out: &mut String, s: &str) {
     write_escaped(out, s).unwrap()
 }

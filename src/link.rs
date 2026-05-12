@@ -20,12 +20,8 @@ impl Link {
             idx
         };
 
-        // Регистрируем ребенка у родителя
         if let Some(p_idx) = parent {
             let mut d = dom.borrow_mut();
-            // Убрали p_idx < index.
-            // Если индекс родителя некорректен, get_mut просто вернет None,
-            // и ребенок не добавится в список — это безопасно.
             if let Some(parent_el) = d.get_mut(p_idx) {
                 parent_el.childs.push(index);
             }
@@ -47,7 +43,7 @@ impl Link {
         Link::new(self.dom.clone(), Some(self.index), tag)
     }
 
-    // --- БЕЗОПАСНЫЕ МЕТОДЫ ---
+    // --- SAFE METHODS ---
 
     pub fn attr(self, name: &str, value: &str) -> Self {
         if let Some(el) = self.dom.borrow_mut().get_mut(self.index) {
@@ -105,7 +101,7 @@ impl Link {
         self
     }
 
-    // --- ОПАСНЫЕ МЕТОДЫ ---
+    // --- UNSAFE METHODS ---
 
     pub fn raw_attr(self, attr_str: &str) -> Self {
         if let Some(el) = self.dom.borrow_mut().get_mut(self.index) {
@@ -155,8 +151,8 @@ impl Link {
         self.render_pretty_into(out)
     }
 
-    // unwrap здесь безопасен по той же причине что и в escape_into_string
-    // String: fmt::Write никогда не возвращает Err.
+    // unwrap is safe here for the same reason as in escape_into_string String: 
+    // fmt::Write never returns Err
     pub fn render(&self) -> String {
         self.render_pretty()
     }

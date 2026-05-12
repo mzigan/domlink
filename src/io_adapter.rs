@@ -14,7 +14,8 @@ use std::fmt;
 /// let mut adapter = IoWriteAdapter(buf);
 /// page.render_into(&mut adapter).unwrap();
 /// ```
-/// Полезно для серверного рендера прямо в HTTP-ответ без буферизации всей страницы в памяти.
+/// Useful for server-side rendering directly into an HTTP response
+/// without buffering the entire page in memory.
 /// let file = std::fs::File::create("out.html").unwrap();
 /// let mut adapter = IoWriteAdapter(std::io::BufWriter::new(file));
 /// el.render(&dom, 0, &mut adapter).unwrap();
