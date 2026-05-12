@@ -3,7 +3,7 @@ use criterion::{BenchmarkId, Criterion, black_box, criterion_group, criterion_ma
 use maud::{DOCTYPE, html};
 
 // поменяй domlink на имя своего крейта
-use domlink::{Tags, Tpl, init};
+use domlink::{Tags, init, tpl::{SafeHtml, Tpl, TplArg}};
 
 #[derive(Clone)]
 struct User {
@@ -53,34 +53,20 @@ fn domlink_build_and_render_compact(title: &str, users: &[User]) -> String {
     page.render_compact()
 }
 
-fn escape_html_local(s: &str) -> String {
-    let mut out = String::with_capacity(s.len());
-
-    for b in s.bytes() {
-        match b {
-            b'&' => out.push_str("&amp;"),
-            b'<' => out.push_str("&lt;"),
-            b'>' => out.push_str("&gt;"),
-            b'"' => out.push_str("&quot;"),
-            b'\'' => out.push_str("&#39;"),
-            _ => out.push(b as char),
-        }
-    }
-
-    out
-}
-
 fn domlink_tpl_render(title: &str, users: &[User]) -> String {
     let row_tpl = Tpl::new("<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>\n");
 
-    let mut rows = String::with_capacity(users.len() * 180);
+    let mut rows_buf = String::with_capacity(users.len() * 180);
 
     for user in users {
         row_tpl.render_into(
-            &mut rows,
+            &mut rows_buf,
             &[&user.id_str, &user.name, &user.email, &user.bio],
         );
     }
+
+    // rows типизирован как безопасный HTML
+    let rows = SafeHtml::new_unchecked(rows_buf);
 
     let page_tpl = Tpl::new(
         "<!DOCTYPE html>
@@ -97,9 +83,17 @@ fn domlink_tpl_render(title: &str, users: &[User]) -> String {
 </html>",
     );
 
-    let safe_title = escape_html_local(title);
-    let mut out = String::with_capacity(rows.len() + 512);
-    page_tpl.render_raw_into(&mut out, &[&safe_title, &safe_title, &rows]);
+    let mut out = String::with_capacity(rows.as_str().len() + 512);
+
+    page_tpl.render_mixed_into(
+        &mut out,
+        &[
+            TplArg::Text(title),
+            TplArg::Text(title),
+            TplArg::Html(&rows),
+        ],
+    );
+
     out
 }
 

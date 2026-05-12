@@ -1,4 +1,4 @@
-use domlink::{init, Tags, Tpl, IoWriteAdapter};
+use domlink::{IoWriteAdapter, Tags, init, tpl::Tpl};
 
 #[test]
 fn test_xss_in_text() {

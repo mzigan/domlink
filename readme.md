@@ -4,23 +4,28 @@
 
 ---
 
-## English
+# English
 
 Fast and safe runtime HTML rendering for Rust.
 
-Domlink combines two approaches:
+Domlink combines two independent rendering systems:
 
-- Safe DOM builder
-- Ultra-light runtime template engine
+* Safe DOM builder
+* Ultra-light runtime template engine
 
-The library focuses on:
-- runtime flexibility,
-- XSS safety,
-- minimal overhead,
-- predictable rendering performance,
-- zero proc-macros,
-- zero code generation,
-- zero build-time template compilation.
+Domlink focuses on:
+
+* runtime flexibility,
+* XSS safety,
+* predictable performance,
+* low allocations,
+* streaming rendering,
+* zero proc-macros,
+* zero code generation,
+* zero compile-time templates,
+* zero dependencies.
+
+Unlike Askama or Maud, Domlink templates can be created dynamically during runtime.
 
 ---
 
@@ -28,11 +33,11 @@ The library focuses on:
 
 ## Safe HTML rendering
 
-All text and attribute values are escaped by default.
+All text and attribute values are escaped automatically.
 
 ```rust
 div.text("<script>alert(1)</script>");
-````
+```
 
 renders as:
 
@@ -42,7 +47,7 @@ renders as:
 </div>
 ```
 
-Protected characters:
+Escaped characters:
 
 * `&`
 * `<`
@@ -54,7 +59,7 @@ Protected characters:
 
 ## Runtime templates
 
-Unlike Askama or Maud, templates can be created dynamically during runtime.
+Templates can be created dynamically during program execution.
 
 ```rust
 let tpl = Tpl::new("<div>{}</div>");
@@ -64,17 +69,17 @@ This enables:
 
 * CMS systems,
 * database-stored templates,
-* multi-tenant rendering,
 * dynamic email layouts,
 * runtime-generated HTML,
 * HTMX fragments,
-* SSR without compile-time templates.
+* SSR without compile-time templates,
+* multi-tenant rendering.
 
 ---
 
 ## Precompiled runtime templates
 
-`Tpl::new()` parses the template once.
+`Tpl::new()` parses the template only once.
 
 Subsequent renders reuse the prepared structure.
 
@@ -87,6 +92,29 @@ for row in rows {
 ```
 
 This makes rendering extremely lightweight.
+
+---
+
+## Mixed rendering with SafeHtml
+
+Domlink supports mixed rendering:
+
+* plain text is escaped,
+* trusted HTML fragments are inserted without repeated escaping.
+
+```rust
+let rows: SafeHtml = build_rows();
+
+page_tpl.render_into(
+    &mut out,
+    &[
+        TplArg::Text(title),
+        TplArg::Html(rows.as_str()),
+    ]
+);
+```
+
+This avoids unnecessary escaping passes and improves performance in hot paths.
 
 ---
 
@@ -144,12 +172,43 @@ Render directly into:
 * buffers.
 
 ```rust
+use domlink::IoWriteAdapter;
+
 let mut adapter = IoWriteAdapter(writer);
 
 page.render_into(&mut adapter)?;
 ```
 
-No intermediate allocation required.
+No intermediate page allocation required.
+
+---
+
+## Fragment rendering
+
+`Tags::Any` renders children without a wrapping element.
+
+```rust
+let frag = root.any();
+
+frag.span().text("first");
+frag.span().text("second");
+```
+
+renders as:
+
+```html
+<span>first</span>
+<span>second</span>
+```
+
+---
+
+# Installation
+
+```toml
+[dependencies]
+domlink = "0.1"
+```
 
 ---
 
@@ -170,7 +229,7 @@ Domlink supports:
 
 ## No macros
 
-No proc macros.
+No proc-macros.
 No generated code.
 No template compilation step.
 
@@ -205,6 +264,8 @@ Unsafe operations are explicit:
 
 Domlink contains two independent rendering systems.
 
+---
+
 ## 1. DOM Renderer
 
 Tree-based HTML builder.
@@ -212,8 +273,8 @@ Tree-based HTML builder.
 Good for:
 
 * structured HTML,
-* complex page generation,
-* reusable UI components.
+* reusable UI components,
+* complex page generation.
 
 ---
 
@@ -236,26 +297,28 @@ Good for:
 
 Example benchmark (10k rows):
 
-| Renderer    | Time    |
-| ----------- | ------- |
-| Domlink Tpl | ~1.5 ms |
-| Maud        | ~1.7 ms |
-| Askama      | ~2.8 ms |
+| Renderer            | Time    |
+| ------------------- | ------- |
+| Domlink Tpl         | ~1.38ms |
+| Maud                | ~1.49ms |
+| Askama              | ~2.37ms |
+| Domlink Compact DOM | ~7.5ms  |
 
 Actual performance depends on workload and allocator.
 
 ---
 
-# Safety
+# API Safety
 
-Safe APIs escape HTML automatically.
-
-Unsafe APIs:
-
-* `raw_html`
-* `raw_attr`
-
-should only be used with trusted input.
+| Method                                 | Escapes input |
+| -------------------------------------- | ------------- |
+| `text(s)`                              | Yes           |
+| `attr(name, value)`                    | Yes           |
+| `id`, `class`, `name`, `value`, `data` | Yes           |
+| `TplArg::Text`                         | Yes           |
+| `TplArg::Html`                         | No            |
+| `raw_attr(s)`                          | No            |
+| `raw_html(s)`                          | No            |
 
 ---
 
@@ -294,23 +357,28 @@ MIT
 
 ---
 
-## Русский
+# Русский
 
 Быстрый и безопасный runtime HTML renderer для Rust.
 
-Domlink сочетает два подхода:
+Domlink сочетает две независимые системы рендера:
 
-- безопасный DOM builder,
-- сверхлегкий runtime template engine.
+* безопасный DOM builder,
+* сверхлегкий runtime template engine.
 
-Библиотека ориентирована на:
-- runtime-гибкость,
-- XSS-безопасность,
-- минимальные накладные расходы,
-- предсказуемую производительность,
-- отсутствие proc-macro,
-- отсутствие codegen,
-- отсутствие compile-time шаблонов.
+Domlink ориентирован на:
+
+* runtime-гибкость,
+* XSS-безопасность,
+* предсказуемую производительность,
+* минимальные аллокации,
+* потоковый рендеринг,
+* отсутствие proc-macro,
+* отсутствие codegen,
+* отсутствие compile-time шаблонов,
+* отсутствие зависимостей.
+
+В отличие от Askama и Maud, шаблоны Domlink можно создавать динамически во время выполнения программы.
 
 ---
 
@@ -322,7 +390,7 @@ Domlink сочетает два подхода:
 
 ```rust
 div.text("<script>alert(1)</script>");
-````
+```
 
 рендерится как:
 
@@ -344,7 +412,7 @@ div.text("<script>alert(1)</script>");
 
 ## Runtime шаблоны
 
-В отличие от Askama и Maud, шаблоны можно создавать динамически во время выполнения программы.
+Шаблоны можно создавать динамически во время выполнения программы.
 
 ```rust
 let tpl = Tpl::new("<div>{}</div>");
@@ -354,11 +422,11 @@ let tpl = Tpl::new("<div>{}</div>");
 
 * CMS,
 * шаблоны из БД,
-* multi-tenant rendering,
 * динамические email layout,
 * runtime HTML generation,
 * HTMX fragments,
-* SSR без compile-time шаблонов.
+* SSR без compile-time шаблонов,
+* multi-tenant rendering.
 
 ---
 
@@ -366,7 +434,7 @@ let tpl = Tpl::new("<div>{}</div>");
 
 `Tpl::new()` разбирает шаблон только один раз.
 
-Дальнейшие вызовы используют уже подготовленную структуру.
+Последующие вызовы используют уже подготовленную структуру.
 
 ```rust
 let tpl = Tpl::new("<tr><td>{}</td></tr>");
@@ -377,6 +445,29 @@ for row in rows {
 ```
 
 Это делает рендер очень легковесным.
+
+---
+
+## Смешанный рендеринг через SafeHtml
+
+Domlink поддерживает смешанный рендеринг:
+
+* обычный текст экранируется,
+* доверенные HTML-фрагменты вставляются без повторного escaping.
+
+```rust
+let rows: SafeHtml = build_rows();
+
+page_tpl.render_into(
+    &mut out,
+    &[
+        TplArg::Text(title),
+        TplArg::Html(rows.as_str()),
+    ]
+);
+```
+
+Это убирает лишние проходы escaping и ускоряет hot path.
 
 ---
 
@@ -424,7 +515,7 @@ page.render_compact();
 
 ---
 
-## Streaming rendering
+## Потоковый рендеринг
 
 Можно рендерить напрямую:
 
@@ -434,12 +525,43 @@ page.render_compact();
 * в буфер.
 
 ```rust
+use domlink::IoWriteAdapter;
+
 let mut adapter = IoWriteAdapter(writer);
 
 page.render_into(&mut adapter)?;
 ```
 
 Без промежуточной аллокации всей страницы.
+
+---
+
+## Рендеринг фрагментов
+
+`Tags::Any` рендерит детей без тега-обёртки.
+
+```rust
+let frag = root.any();
+
+frag.span().text("first");
+frag.span().text("second");
+```
+
+рендерится как:
+
+```html
+<span>first</span>
+<span>second</span>
+```
+
+---
+
+# Установка
+
+```toml
+[dependencies]
+domlink = "0.1"
+```
 
 ---
 
@@ -495,6 +617,8 @@ Tpl renderer — это почти:
 
 Domlink содержит две независимые системы рендера.
 
+---
+
 ## 1. DOM Renderer
 
 Древовидный HTML builder.
@@ -526,26 +650,26 @@ Domlink содержит две независимые системы ренде
 
 Пример benchmark (10k строк):
 
-| Renderer    | Time    |
-| ----------- | ------- |
-| Domlink Tpl | ~1.5 ms |
-| Maud        | ~1.7 ms |
-| Askama      | ~2.8 ms |
-
-Результаты зависят от нагрузки и allocator.
+| Renderer            | Time    |
+| ------------------- | ------- |
+| Domlink Tpl         | ~1.38ms |
+| Maud                | ~1.49ms |
+| Askama              | ~2.37ms |
+| Domlink Compact DOM | ~7.5ms  |
 
 ---
 
-# Безопасность
+# Безопасность API
 
-Безопасные API автоматически экранируют HTML.
-
-Опасные API:
-
-* `raw_html`
-* `raw_attr`
-
-должны использоваться только с доверенным вводом.
+| Метод                                  | Экранирует |
+| -------------------------------------- | ---------- |
+| `text(s)`                              | Да         |
+| `attr(name, value)`                    | Да         |
+| `id`, `class`, `name`, `value`, `data` | Да         |
+| `TplArg::Text`                         | Да         |
+| `TplArg::Html`                         | Нет        |
+| `raw_attr(s)`                          | Нет        |
+| `raw_html(s)`                          | Нет        |
 
 ---
 
