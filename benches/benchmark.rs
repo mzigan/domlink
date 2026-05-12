@@ -3,7 +3,7 @@ use criterion::{BenchmarkId, Criterion, black_box, criterion_group, criterion_ma
 use maud::{DOCTYPE, html};
 
 // поменяй domlink на имя своего крейта
-use domlink::{Tags, init, tpl::{SafeHtml, Tpl, TplArg}};
+use domlink::{SafeHtml, Tags, Tpl, TplArg, init};
 
 #[derive(Clone)]
 struct User {

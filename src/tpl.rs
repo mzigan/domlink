@@ -1,8 +1,5 @@
-use crate::escape_into_string;
+use crate::escape::escape_into_string;
 
-//----------------------------------------------------------------------------------------
-// Tpl
-//----------------------------------------------------------------------------------------
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SafeHtml(String);
 

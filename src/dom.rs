@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::{Tags, escape_into_string, write_escaped};
+use crate::{Tags, escape::{escape_into_string, write_escaped}};
 
 //----------------------------------------------------------------------------------------
 // Dom

@@ -2,9 +2,6 @@ use std::{cell::RefCell, fmt, rc::Rc};
 
 use crate::{Tags, dom::{Dom, Element}, tpl::Tpl};
 
-//----------------------------------------------------------------------------------------
-// Link
-//----------------------------------------------------------------------------------------
 #[derive(Debug, Clone)]
 pub struct Link {
     dom: Rc<RefCell<Dom>>,
