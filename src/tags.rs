@@ -1,51 +1,227 @@
+//! HTML tag definitions used by domlink.
+//!
+//! [`Tags`] defines all built-in HTML and SVG tags supported by the DOM builder.
+//!
+//! Most users do not interact with this enum directly except when creating a
+//! root element through [`crate::init`].
+//!
+//! # Examples
+//!
+//! ```rust
+//! use domlink::{init, Tags};
+//!
+//! let page = init(Tags::Html);
+//! ```
+//!
+//! Child elements are usually created through shortcut methods instead of using
+//! [`Tags`] manually:
+//!
+//! ```rust
+//! use domlink::{init, Tags};
+//!
+//! let root = init(Tags::Div);
+//!
+//! root.span().text("hello");
+//! root.table().tbody().tr().td().text("cell");
+//! ```
+
 use crate::link::Link;
 
+/// Supported HTML and SVG tags.
+///
+/// This enum is used internally by the renderer and externally when creating
+/// root elements with [`crate::init`].
+///
+/// Most tags have corresponding shortcut methods on [`crate::Link`]:
+///
+/// ```rust
+/// use domlink::{init, Tags};
+///
+/// let page = init(Tags::Html);
+///
+/// page.body()
+///     .div()
+///     .class("container")
+///     .text("Hello");
+/// ```
+///
+/// # Fragment Rendering
+///
+/// [`Tags::Any`] is a special fragment tag that renders only its children
+/// without generating a wrapping HTML element.
+///
+/// # Void Elements
+///
+/// Some tags are void elements and cannot contain children:
+///
+/// - `Meta`
+/// - `Link`
+/// - `Img`
+/// - `Br`
+/// - `Input`
 #[derive(Debug, PartialEq, Default, Clone, Copy)]
 pub enum Tags {
+    /// `<html>`
     Html,
+
+    /// `<head>`
     Head,
+
+    /// `<body>`
     Body,
+
+    /// `<svg>`
     Svg,
+
+    /// `<path>`
     Path,
+
+    /// `<div>`
     #[default]
     Div,
+
+    /// `<table>`
     Table,
+
+    /// `<thead>`
     Thead,
+
+    /// `<tbody>`
     Tbody,
+
+    /// `<tr>`
     Tr,
+
+    /// `<td>`
     Td,
+
+    /// `<form>`
     Form,
+
+    /// `<iframe>`
     Iframe,
+
+    /// `<p>`
     P,
+
+    /// `<h1>`
     H1,
+
+    /// `<h2>`
     H2,
+
+    /// `<h3>`
     H3,
+
+    /// `<h4>`
     H4,
+
+    /// `<h5>`
     H5,
+
+    /// `<h6>`
     H6,
+
+    /// `<ol>`
     Ol,
+
+    /// `<ul>`
     Ul,
+
+    /// `<li>`
     Li,
+
+    /// `<br>`
+    ///
+    /// Void element.
     Br,
+
+    /// `<span>`
     Span,
+
+    /// `<img>`
+    ///
+    /// Void element.
     Img,
+
+    /// `<a>`
     A,
+
+    /// `<button>`
     Button,
+
+    /// `<input>`
+    ///
+    /// Void element.
     Input,
+
+    /// `<textarea>`
     Textarea,
+
+    /// `<select>`
     Select,
+
+    /// `<option>`
     Opt,
+
+    /// `<meta>`
+    ///
+    /// Void element.
     Meta,
+
+    /// `<label>`
     Label,
+
+    /// `<title>`
     Title,
+
+    /// `<link>`
+    ///
+    /// Void element.
     Link,
+
+    /// `<script>`
     Script,
+
+    /// `<style>`
     Style,
+
+    /// Fragment node without wrapping tag.
+    ///
+    /// `Any` renders only its children and does not produce an HTML element.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use domlink::{init, Tags};
+    ///
+    /// let frag = init(Tags::Any);
+    ///
+    /// frag.span().text("A");
+    /// frag.span().text("B");
+    ///
+    /// let html = frag.render_compact();
+    ///
+    /// assert_eq!(html, "<span>A</span><span>B</span>");
+    /// ```
     Any,
 }
 
 impl Tags {
-    pub(super) fn opening_tag(&self) -> &'static str {
+    /// Returns the opening HTML tag representation.
+    ///
+    /// This method is used internally by the renderer.
+    ///
+    /// For example:
+    ///
+    /// - `Tags::Div` → `"<div"`
+    /// - `Tags::Span` → `"<span"`
+    ///
+    /// Some tags include built-in attributes:
+    ///
+    /// - `Svg` includes XML namespaces
+    /// - `Img` includes an empty `alt` attribute
+    pub(crate) fn opening_tag(&self) -> &'static str {
         match self {
             Tags::Html => "<html",
             Tags::Head => "<head",
@@ -91,7 +267,12 @@ impl Tags {
         }
     }
 
-    pub(super) fn closing_tag(&self) -> Option<&'static str> {
+    /// Returns the closing HTML tag representation.
+    ///
+    /// Void elements and [`Tags::Any`] return `None`.
+    ///
+    /// This method is used internally by the renderer.
+    pub(crate) fn closing_tag(&self) -> Option<&'static str> {
         match self {
             Tags::Meta | Tags::Link | Tags::Img | Tags::Br | Tags::Input | Tags::Any => None,
 
@@ -131,7 +312,20 @@ impl Tags {
         }
     }
 
-    pub(super) fn is_void(&self) -> bool {
+    /// Returns `true` if the tag is a void element.
+    ///
+    /// Void elements cannot contain children and do not have closing tags.
+    ///
+    /// # Void Elements
+    ///
+    /// - `<meta>`
+    /// - `<link>`
+    /// - `<img>`
+    /// - `<br>`
+    /// - `<input>`
+    ///
+    /// This method is used internally by the renderer and builder validation.
+    pub(crate) fn is_void(&self) -> bool {
         matches!(
             self,
             Tags::Meta | Tags::Link | Tags::Img | Tags::Br | Tags::Input

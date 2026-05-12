@@ -1,6 +1,9 @@
 use std::fmt;
 
-use crate::{Tags, escape::{escape_into_string, write_escaped}};
+use crate::{
+    Tags,
+    escape::{escape_into_string, write_escaped},
+};
 
 #[derive(Debug, Default)]
 pub struct Dom {
@@ -139,7 +142,12 @@ impl Element {
 
     // --- RENDER ---
 
-    pub(super) fn render_pretty<W: fmt::Write>(&self, dom: &Dom, depth: usize, out: &mut W) -> fmt::Result {
+    pub(super) fn render_pretty<W: fmt::Write>(
+        &self,
+        dom: &Dom,
+        depth: usize,
+        out: &mut W,
+    ) -> fmt::Result {
         if self.tag == Tags::Any {
             for &child_idx in &self.childs {
                 if let Some(child) = dom.get(child_idx) {
