@@ -1,0 +1,20 @@
+[package]
+name = "domlink"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+
+[lib]
+name = "domlink"
+path = "src/lib.rs"
+crate-type = ["lib"]
+
+[dev-dependencies]
+criterion = "0.5"
+askama = "0.12"
+maud = "0.26"
+
+[[bench]]
+name = "benchmark"
+harness = false
