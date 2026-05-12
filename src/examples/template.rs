@@ -1,15 +1,13 @@
-use domlink::{Tags, init};
+use domlink::Tpl;
 
 fn main() {
-    let root = init(Tags::Html);
-    let body = root.body();
+    let tpl = Tpl::new(
+        "<div class=\"user\">{}</div>"
+    );
 
-    body.div().tpl();
-    body.div().tpl();
+    let html = tpl.render(&[
+        "<script>alert(1)</script>"
+    ]);
 
-    let t = root.template();    
-
-    println!("{}", t.render(&["John & Doe", "<script>"]));
-
-    println!("{}", t.render_escaped(&["John & Doe", "<script>"]));
+    println!("{html}");
 }
