@@ -2,7 +2,6 @@ use askama::Template;
 use criterion::{BenchmarkId, Criterion, black_box, criterion_group, criterion_main};
 use maud::{DOCTYPE, html};
 
-// поменяй domlink на имя своего крейта
 use domlink::{SafeHtml, Tags, Tpl, TplArg, init};
 
 #[derive(Clone)]
@@ -65,7 +64,6 @@ fn domlink_tpl_render(title: &str, users: &[User]) -> String {
         );
     }
 
-    // rows типизирован как безопасный HTML
     let rows = SafeHtml::new_unchecked(rows_buf);
 
     let page_tpl = Tpl::new(
