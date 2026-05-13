@@ -29,7 +29,7 @@ use crate::{
 ///
 /// `Link` is the primary builder object used by the public API. It does not
 /// store the element directly. Instead, it points to an element inside the
-/// internal [`Dom`] arena.
+/// internal DOM arena.
 ///
 /// Cloning a `Link` is cheap: it clones the internal `Rc` handle and keeps the
 /// same element index.

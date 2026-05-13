@@ -1,8 +1,8 @@
 use std::fmt;
 
-/// Adapts [`std::io::Write`] to [`std::fmt::Write`], allowing [`Link::render_into`]
-/// to write directly to files, sockets, or any other I/O sink without buffering
-/// the entire page in memory.
+/// Adapts [`std::io::Write`] to [`std::fmt::Write`], allowing domlink
+/// render methods to write directly to files, sockets, or any other I/O sink
+/// without buffering the entire page in memory.
 ///
 /// # Example
 /// ```rust
