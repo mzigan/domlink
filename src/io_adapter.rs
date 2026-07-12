@@ -5,6 +5,9 @@ use std::fmt;
 /// without buffering the entire page in memory.
 ///
 /// # Example
+///
+/// Render into an in-memory buffer:
+///
 /// ```rust
 /// use std::io::BufWriter;
 /// use domlink::{init, Tags, IoWriteAdapter};
@@ -14,11 +17,19 @@ use std::fmt;
 /// let mut adapter = IoWriteAdapter(buf);
 /// page.render_into(&mut adapter).unwrap();
 /// ```
-/// Useful for server-side rendering directly into an HTTP response
-/// without buffering the entire page in memory.
-/// let file = std::fs::File::create("out.html").unwrap();
+///
+/// Render directly into a file, useful for server-side rendering
+/// without buffering the entire page in memory:
+///
+/// ```no_run
+/// use std::fs::File;
+/// use domlink::{init, Tags, IoWriteAdapter};
+///
+/// let page = init(Tags::Div).text("hello");
+/// let file = File::create("out.html").unwrap();
 /// let mut adapter = IoWriteAdapter(std::io::BufWriter::new(file));
-/// el.render(&dom, 0, &mut adapter).unwrap();
+/// page.render_into(&mut adapter).unwrap();
+/// ```
 #[allow(dead_code)]
 pub struct IoWriteAdapter<W: std::io::Write>(pub W);
 
