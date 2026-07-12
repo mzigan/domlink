@@ -345,6 +345,40 @@ fn test_tpl_render_into_returns_result_on_success() {
 }
 
 #[test]
+fn test_img_uses_double_quotes_for_alt() {
+    let el = init(Tags::Img);
+    let r = el.render_compact();
+    // alt должен использовать двойные кавычки, как все остальные атрибуты
+    assert!(r.contains(r#"alt="""#));
+    assert!(!r.contains("alt=''"));
+}
+
+#[test]
+fn test_svg_uses_double_quotes_for_namespaces() {
+    let el = init(Tags::Svg);
+    let r = el.render_compact();
+    // xmlns должен использовать двойные кавычки
+    assert!(r.contains(r#"xmlns="http://www.w3.org/2000/svg""#));
+    assert!(r.contains(r#"xmlns:xlink="http://www.w3.org/1999/xlink""#));
+    // не должно быть одинарных кавычек для атрибутов
+    assert!(!r.contains("xmlns='"));
+}
+
+#[test]
+fn test_attr_style_consistency() {
+    // все встроенные и пользовательские атрибуты используют двойные кавычки
+    let el = init(Tags::Div)
+        .attr("title", "test")
+        .class("container")
+        .id("app");
+
+    let r = el.render_compact();
+    assert!(r.contains(r#"title="test""#));
+    assert!(r.contains(r#"class="container""#));
+    assert!(r.contains(r#"id="app""#));
+}
+
+#[test]
 fn test_tpl_render_mixed_into_mismatched_args() {
     use domlink::{SafeHtml, TplArg};
 

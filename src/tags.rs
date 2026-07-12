@@ -229,7 +229,7 @@ impl Tags {
             Tags::Link => "<link",
             Tags::Body => "<body",
             Tags::Svg => {
-                "<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'"
+                "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\""
             }
             Tags::Path => "<path",
             Tags::Div => "<div",
@@ -244,7 +244,7 @@ impl Tags {
             Tags::Ul => "<ul",
             Tags::Li => "<li",
             Tags::Span => "<span",
-            Tags::Img => "<img alt=''",
+            Tags::Img => "<img alt=\"\"",
             Tags::Br => "<br",
             Tags::A => "<a",
             Tags::P => "<p",
