@@ -210,6 +210,8 @@ renders as:
 domlink = "0.1"
 ```
 
+Requires Rust 1.85 or later.
+
 ---
 
 # Why Domlink?
@@ -562,6 +564,8 @@ frag.span().text("second");
 [dependencies]
 domlink = "0.1"
 ```
+
+Требуется Rust 1.85 или новее.
 
 ---
 

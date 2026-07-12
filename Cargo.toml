@@ -2,6 +2,7 @@
 name = "domlink"
 version = "0.1.0"
 edition = "2024"
+rust-version = "1.85"
 description = "Fast and safe runtime HTML rendering for Rust"
 license = "MIT"
 repository = "https://github.com/mzigan/domlink"
