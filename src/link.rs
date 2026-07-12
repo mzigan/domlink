@@ -149,6 +149,9 @@ impl Link {
     /// Sets the `id` attribute.
     ///
     /// The value is HTML-escaped automatically.
+    ///
+    /// If called multiple times, the last value overwrites the previous one,
+    /// so the element always has at most one `id` attribute.
     pub fn id(self, value: &str) -> Self {
         if let Some(el) = self.dom.borrow_mut().get_mut(self.index) {
             el.id(value);

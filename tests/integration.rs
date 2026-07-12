@@ -211,11 +211,12 @@ fn test_tpl_empty_string() {
 
 #[test]
 fn test_multiple_id_calls_last_wins() {
-    // или оба появятся — важно знать поведение
     let el = init(Tags::Div).id("first").id("second");
     let r = el.render();
-    // документируем факт: два id в атрибутах
-    assert_eq!(r.matches("id=").count(), 2);
+    // последний вызов перезаписывает предыдущий — id только один
+    assert_eq!(r.matches("id=").count(), 1);
+    assert!(r.contains(r#"id="second""#));
+    assert!(!r.contains(r#"id="first""#));
 }
 
 #[test]

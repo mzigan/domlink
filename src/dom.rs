@@ -73,7 +73,14 @@ impl Element {
     }
 
     pub fn id(&mut self, value: &str) -> &mut Self {
-        self.attr("id", value)
+        let mut escaped_val = String::with_capacity(value.len());
+        escape_into_string(&mut escaped_val, value);
+        if let Some(existing) = self.attrs.iter_mut().find(|(k, _)| k == "id") {
+            existing.1 = escaped_val;
+        } else {
+            self.attrs.push(("id".to_owned(), escaped_val));
+        }
+        self
     }
 
     pub fn name(&mut self, value: &str) -> &mut Self {
