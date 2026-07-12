@@ -47,7 +47,9 @@
 //! ]);
 //! ```
 
-use crate::escape::escape_into_string;
+use std::fmt;
+
+use crate::escape::{escape_into_string, write_escaped};
 
 /// Trusted HTML fragment.
 ///
@@ -274,15 +276,27 @@ impl Tpl {
     /// ```
     pub fn render_safe_html(&self, text: &[&str]) -> SafeHtml {
         let mut out = String::new();
-        self.render_into(&mut out, text);
+        self.render_into(&mut out, text).unwrap();
         SafeHtml(out)
     }
 
-    /// Renders escaped text directly into an existing buffer.
+    /// Renders escaped text directly into a [`fmt::Write`] sink.
     ///
-    /// Useful for minimizing allocations in hot rendering paths.
-    pub fn render_safe_html_into(&self, out: &mut String, text: &[&str]) {
-        self.render_into(out, text);
+    /// Useful for minimizing allocations in hot rendering paths and for
+    /// streaming directly into files, sockets, or HTTP responses.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use domlink::Tpl;
+    ///
+    /// let tpl = Tpl::new("<td>{}</td>");
+    ///
+    /// let mut out = String::new();
+    /// tpl.render_safe_html_into(&mut out, &["Alice"]);
+    /// ```
+    pub fn render_safe_html_into<W: fmt::Write>(&self, out: &mut W, text: &[&str]) -> fmt::Result {
+        self.render_into(out, text)
     }
 
     /// Renders mixed escaped text and trusted HTML into a new string.
@@ -308,24 +322,49 @@ impl Tpl {
     /// ```
     pub fn render_mixed(&self, args: &[TplArg<'_>]) -> String {
         let mut out = String::new();
-        self.render_mixed_into(&mut out, args);
+        self.render_mixed_into(&mut out, args).unwrap();
         out
     }
 
-    /// Renders mixed escaped/raw arguments into an existing buffer.
+    /// Renders mixed escaped/raw arguments into a [`fmt::Write`] sink.
     ///
     /// This is the most flexible rendering API.
-    pub fn render_mixed_into(&self, out: &mut String, args: &[TplArg<'_>]) {
+    ///
+    /// Supports streaming directly into files, sockets, or HTTP responses
+    /// via [`crate::IoWriteAdapter`].
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use domlink::{SafeHtml, Tpl, TplArg};
+    ///
+    /// let rows = SafeHtml::new_unchecked(
+    ///     "<tr><td>1</td></tr>".to_string()
+    /// );
+    ///
+    /// let tpl = Tpl::new("<table>{}</table>");
+    ///
+    /// let mut out = String::new();
+    /// tpl.render_mixed_into(&mut out, &[
+    ///     TplArg::Html(&rows)
+    /// ]);
+    /// ```
+    pub fn render_mixed_into<W: fmt::Write>(
+        &self,
+        out: &mut W,
+        args: &[TplArg<'_>],
+    ) -> fmt::Result {
         for (n, s) in self.subs.iter().enumerate() {
-            out.push_str(s);
+            out.write_str(s)?;
 
             if n < args.len() && n < self.subs.len() - 1 {
                 match args[n] {
-                    TplArg::Text(text) => escape_into_string(out, text),
-                    TplArg::Html(html) => out.push_str(html.as_str()),
+                    TplArg::Text(text) => write_escaped(out, text)?,
+                    TplArg::Html(html) => out.write_str(html.as_str())?,
                 }
             }
         }
+        Ok(())
     }
 
     /// Renders mixed content and returns trusted HTML.
@@ -333,7 +372,7 @@ impl Tpl {
     /// Useful for composing nested runtime templates efficiently.
     pub fn render_mixed_safe_html(&self, args: &[TplArg<'_>]) -> SafeHtml {
         let mut out = String::new();
-        self.render_mixed_into(&mut out, args);
+        self.render_mixed_into(&mut out, args).unwrap();
         SafeHtml(out)
     }
 
@@ -398,33 +437,60 @@ impl Tpl {
         res
     }
 
-    /// Renders escaped text into an existing buffer.
+    /// Renders escaped text into a [`fmt::Write`] sink.
     ///
     /// Avoids allocating a new string for each render.
-    pub fn render_into(&self, out: &mut String, text: &[&str]) {
+    ///
+    /// Supports streaming directly into files, sockets, or HTTP responses
+    /// via [`crate::IoWriteAdapter`].
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use domlink::Tpl;
+    ///
+    /// let tpl = Tpl::new("<li>{}</li>");
+    ///
+    /// let mut out = String::new();
+    /// tpl.render_into(&mut out, &["Alice"]);
+    /// ```
+    pub fn render_into<W: fmt::Write>(&self, out: &mut W, text: &[&str]) -> fmt::Result {
         for (n, s) in self.subs.iter().enumerate() {
-            out.push_str(s);
+            out.write_str(s)?;
 
             if n < text.len() && n < self.subs.len() - 1 {
-                escape_into_string(out, text[n]);
+                write_escaped(out, text[n])?;
             }
         }
+        Ok(())
     }
 
-    /// Renders raw unescaped text into an existing buffer.
+    /// Renders raw unescaped text into a [`fmt::Write`] sink.
     ///
     /// # Warning
     ///
     /// This method bypasses HTML escaping.
     ///
     /// Never pass untrusted user input here.
-    pub fn render_raw_into(&self, out: &mut String, text: &[&str]) {
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use domlink::Tpl;
+    ///
+    /// let tpl = Tpl::new("<div>{}</div>");
+    ///
+    /// let mut out = String::new();
+    /// tpl.render_raw_into(&mut out, &["<b>raw</b>"]);
+    /// ```
+    pub fn render_raw_into<W: fmt::Write>(&self, out: &mut W, text: &[&str]) -> fmt::Result {
         for (n, s) in self.subs.iter().enumerate() {
-            out.push_str(s);
+            out.write_str(s)?;
 
             if n < text.len() && n < self.subs.len() - 1 {
-                out.push_str(text[n]);
+                out.write_str(text[n])?;
             }
         }
+        Ok(())
     }
 }

@@ -291,3 +291,79 @@ fn test_io_write_adapter() {
     let s = String::from_utf8(buf).unwrap();
     assert!(s.contains("<div>"));
 }
+
+#[test]
+fn test_tpl_render_into_io_writer() {
+    let tpl = Tpl::new("<div>{}</div>");
+
+    let mut buf = Vec::new();
+    let mut adapter = IoWriteAdapter(&mut buf);
+
+    tpl.render_into(&mut adapter, &["hello"]).unwrap();
+
+    let s = String::from_utf8(buf).unwrap();
+    assert_eq!(s, "<div>hello</div>");
+}
+
+#[test]
+fn test_tpl_render_mixed_into_io_writer() {
+    use domlink::{SafeHtml, TplArg};
+
+    let tpl = Tpl::new("<p>{}{}</p>");
+    let safe = SafeHtml::new_unchecked("<b>html</b>".to_string());
+
+    let mut buf = Vec::new();
+    let mut adapter = IoWriteAdapter(&mut buf);
+
+    tpl.render_mixed_into(&mut adapter, &[TplArg::Text("<text>"), TplArg::Html(&safe)])
+        .unwrap();
+
+    let s = String::from_utf8(buf).unwrap();
+    assert_eq!(s, "<p>&lt;text&gt;<b>html</b></p>");
+}
+
+#[test]
+fn test_tpl_render_raw_into_io_writer() {
+    let tpl = Tpl::new("<div>{}</div>");
+
+    let mut buf = Vec::new();
+    let mut adapter = IoWriteAdapter(&mut buf);
+
+    tpl.render_raw_into(&mut adapter, &["<b>raw</b>"]).unwrap();
+
+    let s = String::from_utf8(buf).unwrap();
+    assert_eq!(s, "<div><b>raw</b></div>");
+}
+
+#[test]
+fn test_tpl_render_into_returns_result_on_success() {
+    let tpl = Tpl::new("<div>{}</div>");
+    let mut out = String::new();
+    let result = tpl.render_into(&mut out, &["ok"]);
+    assert!(result.is_ok());
+    assert_eq!(out, "<div>ok</div>");
+}
+
+#[test]
+fn test_tpl_render_mixed_into_mismatched_args() {
+    use domlink::{SafeHtml, TplArg};
+
+    // 2 плейсхолдера, 1 аргумент — пропущенный просто игнорируется
+    let tpl = Tpl::new("<p>{} {}</p>");
+    let mut out = String::new();
+    tpl.render_mixed_into(&mut out, &[TplArg::Text("only")])
+        .unwrap();
+
+    assert_eq!(out, "<p>only </p>");
+
+    // 2 плейсхолдера, 3 аргумента — лишний игнорируется
+    let safe = SafeHtml::new_unchecked("<x/>".to_string());
+    let mut out2 = String::new();
+    tpl.render_mixed_into(
+        &mut out2,
+        &[TplArg::Text("a"), TplArg::Text("b"), TplArg::Html(&safe)],
+    )
+    .unwrap();
+
+    assert_eq!(out2, "<p>a b</p>");
+}

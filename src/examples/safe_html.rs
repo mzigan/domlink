@@ -1,17 +1,14 @@
 use domlink::{SafeHtml, Tpl, TplArg};
 
 fn main() {
-    let row_tpl = Tpl::new(
-        "<tr><td>{}</td></tr>"
-    );
+    let row_tpl = Tpl::new("<tr><td>{}</td></tr>");
 
     let mut rows = String::new();
 
     for i in 1..=3 {
-        row_tpl.render_into(
-            &mut rows,
-            &[&i.to_string()],
-        );
+        row_tpl
+            .render_into(&mut rows, &[&i.to_string()])
+            .unwrap();
     }
 
     let rows = SafeHtml::new_unchecked(rows);

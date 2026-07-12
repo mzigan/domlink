@@ -58,10 +58,12 @@ fn domlink_tpl_render(title: &str, users: &[User]) -> String {
     let mut rows_buf = String::with_capacity(users.len() * 180);
 
     for user in users {
-        row_tpl.render_into(
-            &mut rows_buf,
-            &[&user.id_str, &user.name, &user.email, &user.bio],
-        );
+        row_tpl
+            .render_into(
+                &mut rows_buf,
+                &[&user.id_str, &user.name, &user.email, &user.bio],
+            )
+            .unwrap();
     }
 
     let rows = SafeHtml::new_unchecked(rows_buf);
@@ -83,14 +85,16 @@ fn domlink_tpl_render(title: &str, users: &[User]) -> String {
 
     let mut out = String::with_capacity(rows.as_str().len() + 512);
 
-    page_tpl.render_mixed_into(
-        &mut out,
-        &[
-            TplArg::Text(title),
-            TplArg::Text(title),
-            TplArg::Html(&rows),
-        ],
-    );
+    page_tpl
+        .render_mixed_into(
+            &mut out,
+            &[
+                TplArg::Text(title),
+                TplArg::Text(title),
+                TplArg::Html(&rows),
+            ],
+        )
+        .unwrap();
 
     out
 }
