@@ -109,9 +109,10 @@ impl Link {
     pub fn append(&self, tag: Tags) -> Link {
         {
             let d = self.dom.borrow();
-            if d.get(self.index).is_some_and(|el| el.tag.is_void()) {
-                panic!("Cannot append child <{:?}> to void element", tag);
-            }
+            assert!(
+                !d.get(self.index).is_some_and(|el| el.tag.is_void()),
+                "Cannot append child <{tag:?}> to void element"
+            );
         }
 
         Link::new(self.dom.clone(), Some(self.index), tag)
@@ -188,6 +189,50 @@ impl Link {
     pub fn name(self, value: &str) -> Self {
         if let Some(el) = self.dom.borrow_mut().get_mut(self.index) {
             el.name(value);
+        }
+        self
+    }
+
+    /// Sets the `href` attribute.
+    ///
+    /// The value is HTML-escaped automatically.
+    pub fn href(self, value: &str) -> Self {
+        if let Some(el) = self.dom.borrow_mut().get_mut(self.index) {
+            el.href(value);
+        }
+        self
+    }
+
+    /// Sets the `src` attribute.
+    ///
+    /// The value is HTML-escaped automatically.
+    pub fn src(self, value: &str) -> Self {
+        if let Some(el) = self.dom.borrow_mut().get_mut(self.index) {
+            el.src(value);
+        }
+        self
+    }
+
+    /// Sets the `type` attribute.
+    ///
+    /// Named `type_` because `type` is a Rust keyword.
+    ///
+    /// The value is HTML-escaped automatically.
+    pub fn type_(self, value: &str) -> Self {
+        if let Some(el) = self.dom.borrow_mut().get_mut(self.index) {
+            el.type_(value);
+        }
+        self
+    }
+
+    /// Sets the `for` attribute.
+    ///
+    /// Named `for_` because `for` is a Rust keyword.
+    ///
+    /// The value is HTML-escaped automatically.
+    pub fn for_(self, value: &str) -> Self {
+        if let Some(el) = self.dom.borrow_mut().get_mut(self.index) {
+            el.for_(value);
         }
         self
     }

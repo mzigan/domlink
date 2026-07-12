@@ -186,6 +186,14 @@ pub enum Tags {
     /// `<style>`
     Style,
 
+    /// `<pre>`
+    ///
+    /// Preformatted text — whitespace and newlines are preserved.
+    Pre,
+
+    /// `<code>`
+    Code,
+
     /// Fragment node without wrapping tag.
     ///
     /// `Any` renders only its children and does not produce an HTML element.
@@ -207,6 +215,7 @@ pub enum Tags {
     Any,
 }
 
+#[allow(clippy::trivially_copy_pass_by_ref)]
 impl Tags {
     /// Returns the opening HTML tag representation.
     ///
@@ -263,6 +272,8 @@ impl Tags {
             Tags::Title => "<title",
             Tags::Script => "<script",
             Tags::Style => "<style",
+            Tags::Pre => "<pre",
+            Tags::Code => "<code",
             Tags::Any => "",
         }
     }
@@ -309,6 +320,8 @@ impl Tags {
             Tags::Title => Some("</title>"),
             Tags::Script => Some("</script>"),
             Tags::Style => Some("</style>"),
+            Tags::Pre => Some("</pre>"),
+            Tags::Code => Some("</code>"),
         }
     }
 
@@ -385,5 +398,7 @@ impl_tag_shortcuts! {
     br => Tags::Br,
     label => Tags::Label,
     iframe => Tags::Iframe,
+    pre => Tags::Pre,
+    code => Tags::Code,
     any => Tags::Any,
 }

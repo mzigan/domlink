@@ -395,7 +395,7 @@ impl Tpl {
     /// );
     /// ```
     pub fn render(&self, text: &[&str]) -> String {
-        let len = self.subs.iter().map(|s| s.len()).sum::<usize>()
+        let len = self.subs.iter().map(String::len).sum::<usize>()
             + text.iter().map(|s| s.len()).sum::<usize>();
 
         let mut res = String::with_capacity(len);
@@ -421,7 +421,7 @@ impl Tpl {
     ///
     /// Prefer [`Tpl::render`] whenever possible.
     pub fn render_raw(&self, text: &[&str]) -> String {
-        let len = self.subs.iter().map(|s| s.len()).sum::<usize>()
+        let len = self.subs.iter().map(String::len).sum::<usize>()
             + text.iter().map(|s| s.len()).sum::<usize>();
 
         let mut res = String::with_capacity(len);

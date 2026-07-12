@@ -61,11 +61,7 @@ impl Element {
     }
 
     pub fn attr(&mut self, name: &str, value: &str) -> &mut Self {
-        assert!(
-            is_valid_attr_name(name),
-            "invalid attribute name: '{}'",
-            name
-        );
+        assert!(is_valid_attr_name(name), "invalid attribute name: '{name}'");
         let mut escaped_val = String::with_capacity(value.len());
         escape_into_string(&mut escaped_val, value);
         self.attrs.push((name.to_owned(), escaped_val));
@@ -87,6 +83,28 @@ impl Element {
         self.attr("name", value)
     }
 
+    pub fn href(&mut self, value: &str) -> &mut Self {
+        self.attr("href", value)
+    }
+
+    pub fn src(&mut self, value: &str) -> &mut Self {
+        self.attr("src", value)
+    }
+
+    /// Sets the `type` attribute.
+    ///
+    /// Named `type_` because `type` is a Rust keyword.
+    pub fn type_(&mut self, value: &str) -> &mut Self {
+        self.attr("type", value)
+    }
+
+    /// Sets the `for` attribute.
+    ///
+    /// Named `for_` because `for` is a Rust keyword.
+    pub fn for_(&mut self, value: &str) -> &mut Self {
+        self.attr("for", value)
+    }
+
     pub fn value(&mut self, value: &str) -> &mut Self {
         self.attr("value", value)
     }
@@ -95,10 +113,9 @@ impl Element {
         assert!(!key.is_empty(), "data attribute key cannot be empty");
         assert!(
             is_valid_attr_name(key),
-            "invalid data attribute key: '{}'",
-            key
+            "invalid data attribute key: '{key}'"
         );
-        self.attr(&format!("data-{}", key), value)
+        self.attr(&format!("data-{key}"), value)
     }
 
     pub fn class(&mut self, value: &str) -> &mut Self {
@@ -174,11 +191,11 @@ impl Element {
         out.write_str(self.tag.opening_tag())?;
 
         for (name, value) in &self.attrs {
-            write!(out, " {}=\"{}\"", name, value)?;
+            write!(out, " {name}=\"{value}\"")?;
         }
 
         for raw in &self.raw_attrs {
-            write!(out, " {}", raw)?;
+            write!(out, " {raw}")?;
         }
 
         out.write_char('>')?;
@@ -194,6 +211,28 @@ impl Element {
                 out.write_str(closing)?;
             }
             out.write_char('\n')?;
+            return Ok(());
+        }
+
+        // <pre> preserves whitespace — text must not be reformatted with
+        // per-line indentation, otherwise significant spaces and newlines
+        // would be corrupted.
+        if self.tag == Tags::Pre {
+            if !self.text.is_empty() {
+                write_escaped(out, &self.text)?;
+            }
+            if !self.raw_html.is_empty() {
+                out.write_str(&self.raw_html)?;
+            }
+            for &child_idx in &self.childs {
+                if let Some(child) = dom.get(child_idx) {
+                    child.render_pretty(dom, depth + 1, out)?;
+                }
+            }
+            if let Some(closing) = self.tag.closing_tag() {
+                out.write_str(closing)?;
+                out.write_char('\n')?;
+            }
             return Ok(());
         }
 
@@ -245,11 +284,11 @@ impl Element {
         out.write_str(self.tag.opening_tag())?;
 
         for (name, value) in &self.attrs {
-            write!(out, " {}=\"{}\"", name, value)?;
+            write!(out, " {name}=\"{value}\"")?;
         }
 
         for raw in &self.raw_attrs {
-            write!(out, " {}", raw)?;
+            write!(out, " {raw}")?;
         }
 
         out.write_char('>')?;

@@ -379,6 +379,92 @@ fn test_attr_style_consistency() {
 }
 
 #[test]
+fn test_href_shortcut() {
+    let el = init(Tags::A).href("https://example.com").text("Link");
+    let r = el.render_compact();
+    assert!(r.contains(r#"href="https://example.com""#));
+}
+
+#[test]
+fn test_src_shortcut() {
+    let el = init(Tags::Img).src("image.png");
+    let r = el.render_compact();
+    assert!(r.contains(r#"src="image.png""#));
+}
+
+#[test]
+fn test_type_shortcut() {
+    let el = init(Tags::Input).type_("text");
+    let r = el.render_compact();
+    assert!(r.contains(r#"type="text""#));
+}
+
+#[test]
+fn test_for_shortcut() {
+    let el = init(Tags::Label).for_("username").text("Username");
+    let r = el.render_compact();
+    assert!(r.contains(r#"for="username""#));
+}
+
+#[test]
+fn test_attr_shortcuts_escape_values() {
+    let el = init(Tags::A).href("javascript:alert(\"xss\")");
+    let r = el.render_compact();
+    assert!(r.contains("javascript:alert(&quot;xss&quot;)"));
+    assert!(!r.contains(r#"javascript:alert("xss")"#));
+}
+
+#[test]
+fn test_pre_preserves_whitespace_in_pretty() {
+    let el = init(Tags::Pre).text("line 1\n  line 2\n    line 3");
+    let r = el.render_pretty();
+
+    // <pre> должен сохранить переносы и пробелы без добавления отступов
+    assert!(r.contains("<pre>line 1\n  line 2\n    line 3</pre>"));
+    // не должно быть лишних отступов перед каждой строкой
+    assert!(!r.contains("\n    line 2\n      line 3"));
+}
+
+#[test]
+fn test_pre_compact_preserves_whitespace() {
+    let el = init(Tags::Pre).text("  spaced\n  text");
+    let r = el.render_compact();
+    assert_eq!(r, "<pre>  spaced\n  text</pre>");
+}
+
+#[test]
+fn test_pre_with_children() {
+    let pre = init(Tags::Pre);
+    pre.code().text("fn main() {}");
+    let r = pre.render_compact();
+
+    assert!(r.contains("<pre>"));
+    assert!(r.contains("<code>fn main() {}</code>"));
+    assert!(r.contains("</pre>"));
+}
+
+#[test]
+fn test_code_renders_correctly() {
+    let el = init(Tags::Code).text("let x = 1;");
+    let r = el.render_compact();
+    assert_eq!(r, "<code>let x = 1;</code>");
+}
+
+#[test]
+fn test_code_escapes_html() {
+    let el = init(Tags::Code).text("<b>bold</b>");
+    let r = el.render_compact();
+    assert_eq!(r, "<code>&lt;b&gt;bold&lt;/b&gt;</code>");
+}
+
+#[test]
+fn test_pre_escapes_html() {
+    let el = init(Tags::Pre).text("<script>alert(1)</script>");
+    let r = el.render_compact();
+    assert_eq!(r, "<pre>&lt;script&gt;alert(1)&lt;/script&gt;</pre>");
+}
+
+#[test]
 fn test_tpl_render_mixed_into_mismatched_args() {
     use domlink::{SafeHtml, TplArg};
 
